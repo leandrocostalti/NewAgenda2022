@@ -227,15 +227,17 @@
                 <!-- /.card-body -->
 
                 <div class="card-footer">
-                  <button name="btnCContato" type="submit" class="btn btn-primary">Editar Contato</button>
+                  <button name="btnUpContato" type="submit" class="btn btn-primary">Editar Contato</button>
                 </div>
               </form>
               <?php
                   
-                  if(isset($_POST['btnCContato'])){
+                  if(isset($_POST['btnUpContato'])){
                       $nome = $_POST['nome'];
                       $telefone = $_POST['telefone'];
                       $email = $_POST['email'];
+
+                      if(!empty($_FILES['foto']['name'])){
                       $formatP = array("png","jpg","jpeg","JPG","gif");
                       $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
 
@@ -244,9 +246,23 @@
                           $temporario = $_FILES['foto']['tmp_name'];
                           $novoNome = uniqid().".$extensao";
                           if(move_uploaded_file($temporario, $pasta.$novoNome)){
-                              $cadastro = "INSERT INTO tb_contato (nome_contato, telefone_contato, email_contato, foto_contato) VALUES (:nome, :telefone, :email, :foto)";
+                              
+                          }else{
+                            echo "Erro, não foi possível fazer o upload do arquivo!";
+                          }
+
+                      }else{
+                        echo "Formato de imagem Inválida";
+                      }
+                    }else{
+                      $novoNome=$fotoCont;
+                    }
+                      $editar = "UPDATE tb_contato SET nome_contato=:nome,telefone_contato=
+                      :telefone,email_contato=:email,foto_contato=:foto WHERE 
+                      id_contato=:id";
                       try{
-                        $result = $conect->prepare($cadastro);
+                        $result = $conect->prepare($editar);
+                        $result->bindParam(':id',$id,PDO::PARAM_STR);
                         $result->bindParam(':nome',$nome,PDO::PARAM_STR);
                         $result->bindParam(':telefone',$telefone,PDO::PARAM_STR);
                         $result->bindParam(':email',$email,PDO::PARAM_STR);
@@ -274,15 +290,6 @@
                       }catch(PDOException $e){
                         echo "<strong>ERRO DE CADASTRO PDO = </strong>".$e->getMessage();
                       }
-                          }else{
-                            echo "Erro, não foi possível fazer o upload do arquivo!";
-                          }
-
-                      }else{
-                        echo "Formato Inválido";
-                      }
-                      
-
 
 
 
